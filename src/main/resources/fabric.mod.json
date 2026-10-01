@@ -1,0 +1,21 @@
+{
+	"schemaVersion": 1,
+	"id": "better_minecart_with_furnace",
+	"version": "${version}",
+	"name": "Better Minecart With Furnace",
+	"description": "更好的动力矿车：逐渐加速；可用水桶熄灭，用打火石或燃料重新点燃（手持或发射器均可）；熄灭后可由正上方的漏斗补充燃料；未充能的动力铁轨能刹停它，充能的不给燃烧中的动力矿车加速。纯服务端。",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"betterminecartwithfurnace.BetterMinecartWithFurnace"
+		]
+	},
+	"mixins": [
+		"better_minecart_with_furnace.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~26.3",
+		"java": ">=25"
+	}
+}

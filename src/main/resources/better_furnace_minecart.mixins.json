@@ -1,0 +1,18 @@
+{
+	"required": true,
+	"package": "betterminecartwithfurnace.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"mixins": [
+		"DispenserBlockMixin",
+		"FlintAndSteelDispenseItemBehaviorMixin",
+		"MinecartFurnaceMixin",
+		"NewMinecartBehaviorMixin",
+		"OldMinecartBehaviorMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
