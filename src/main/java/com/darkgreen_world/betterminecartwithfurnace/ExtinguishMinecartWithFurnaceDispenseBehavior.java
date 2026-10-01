@@ -1,4 +1,4 @@
-package betterminecartwithfurnace;
+package com.darkgreen_world.betterminecartwithfurnace;
 
 import java.util.List;
 
@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.AABB;
 
 /**
- * 发射器里的水桶：面前一格有动力矿车时熄灭它（和玩家手持水桶一样不消耗水），不倒水；
- * 没有动力矿车时交还给原版行为。
+ * Water bucket in a dispenser: if a minecart with furnace is in the block in front, extinguish it instead of
+ * placing water (the water is not used up, same as when a player does it); otherwise fall back to vanilla.
  */
 public final class ExtinguishMinecartWithFurnaceDispenseBehavior implements DispenseItemBehavior {
 	private final DispenseItemBehavior fallback;
@@ -40,7 +40,7 @@ public final class ExtinguishMinecartWithFurnaceDispenseBehavior implements Disp
 			}
 		}
 
-		// 与原版 OptionalDispenseItemBehavior 相同的反馈：成功是“咔哒”加烟雾，失败是空发射的声音。
+		// Same feedback as vanilla OptionalDispenseItemBehavior: click and smoke on success, the "empty" sound on failure.
 		level.levelEvent(extinguished ? 1000 : 1001, source.pos(), 0);
 
 		if (extinguished) {

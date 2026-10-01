@@ -1,6 +1,6 @@
-package betterminecartwithfurnace.mixin;
+package com.darkgreen_world.betterminecartwithfurnace.mixin;
 
-import betterminecartwithfurnace.ExtinguishableMinecartWithFurnace;
+import com.darkgreen_world.betterminecartwithfurnace.ExtinguishableMinecartWithFurnace;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,12 +16,13 @@ import net.minecraft.world.phys.AABB;
 @Mixin(FlintAndSteelDispenseItemBehavior.class)
 public abstract class FlintAndSteelDispenseItemBehaviorMixin {
 	/**
-	 * 原版发射器用打火石时先调用 tryIgniteExplosiveEntities 点燃面前一格里的实体（硫磺方块怪），
-	 * 返回 true 就不再放火，并照常扣耐久、播放音效。这里把熄灭状态的动力矿车也算进去。
-	 * 空的动力矿车不是熄灭状态，点不着。
+	 * When a dispenser uses flint and steel, vanilla first calls tryIgniteExplosiveEntities to ignite entities in the
+	 * block in front (sulfur cubes). If that returns true no fire is placed, and durability and sounds are handled as
+	 * usual. Extinguished minecarts with furnace are counted here too.
+	 * An empty minecart with furnace is not "extinguished" and cannot be lit.
 	 */
 	@ModifyExpressionValue(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/FlintAndSteelDispenseItemBehavior;tryIgniteExplosiveEntities(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)Z"))
-	private boolean betterMinecartWithFurnace$igniteMinecartWithFurnaces(boolean ignited, BlockSource source, ItemStack dispensed) {
+	private boolean betterMinecartWithFurnace$igniteMinecartsWithFurnace(boolean ignited, BlockSource source, ItemStack dispensed) {
 		BlockPos targetPos = source.pos().relative(source.state().getValue(DispenserBlock.FACING));
 
 		for (MinecartFurnace minecart : source.level().getEntitiesOfClass(MinecartFurnace.class, new AABB(targetPos))) {

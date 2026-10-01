@@ -1,4 +1,4 @@
-package betterminecartwithfurnace;
+package com.darkgreen_world.betterminecartwithfurnace;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -18,19 +18,15 @@ public class BetterMinecartWithFurnace implements ModInitializer {
 	public static final String MOD_ID = "better_minecart_with_furnace";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	/** 被水桶熄灭的动力矿车带有这个实体标签（随原版 Tags 存档，也可以用 /tag 手动增删）。 */
+	/** Entity tag carried by an extinguished minecart with furnace. Saved with the vanilla Tags list, and can be added or removed with /tag. */
 	public static final String EXTINGUISHED_TAG = MOD_ID + ".extinguished";
 
-	/** 充能动力铁轨每 tick 给矿车增加的速度（格/tick），也是本模组加速度的上限。 */
-	public static final double POWERED_RAIL_ACCELERATION = 0.06;
-
-	private static final double DEFAULT_ACCELERATION = 0.01;
-	private static final double MIN_ACCELERATION = 0.001;
+	private static final double DEFAULT_ACCELERATION = 0.04;
 	private static final String ACCELERATION_KEY = "acceleration";
 
 	private static double acceleration = DEFAULT_ACCELERATION;
 
-	/** 动力矿车发动机每 tick 最多增加的速度（格/tick）。 */
+	/** The most speed (blocks/tick) a minecart with furnace may gain per tick until it reaches its top speed. */
 	public static double acceleration() {
 		return acceleration;
 	}
@@ -46,7 +42,7 @@ public class BetterMinecartWithFurnace implements ModInitializer {
 				writeDefaults(file);
 			}
 		} catch (IOException e) {
-			LOGGER.warn("无法读写配置文件 {}，使用默认加速度 {}", file, DEFAULT_ACCELERATION, e);
+			LOGGER.warn("Could not read or write config file {}, using the default acceleration {}", file, DEFAULT_ACCELERATION, e);
 		}
 	}
 
@@ -68,15 +64,14 @@ public class BetterMinecartWithFurnace implements ModInitializer {
 		try {
 			value = Double.parseDouble(raw.trim());
 		} catch (NumberFormatException e) {
-			LOGGER.warn("{} 中的 {}={} 不是数字，使用默认值 {}", file, ACCELERATION_KEY, raw, DEFAULT_ACCELERATION);
+			LOGGER.warn("{}: {}={} is not a number, using the default {}", file, ACCELERATION_KEY, raw, DEFAULT_ACCELERATION);
 			return DEFAULT_ACCELERATION;
 		}
 
-		// !(a >= b) 的写法顺便把 NaN 挡在外面
-		if (!(value >= MIN_ACCELERATION) || value > POWERED_RAIL_ACCELERATION) {
-			double clamped = value > POWERED_RAIL_ACCELERATION ? POWERED_RAIL_ACCELERATION : MIN_ACCELERATION;
-			LOGGER.warn("{}={} 超出允许范围 [{}, {}]，改用 {}", ACCELERATION_KEY, raw, MIN_ACCELERATION, POWERED_RAIL_ACCELERATION, clamped);
-			return clamped;
+		// Written as !(a > 0) so that NaN is rejected as well
+		if (!(value > 0.0) || Double.isInfinite(value)) {
+			LOGGER.warn("{}={} must be a positive number, using the default {}", ACCELERATION_KEY, raw, DEFAULT_ACCELERATION);
+			return DEFAULT_ACCELERATION;
 		}
 
 		return value;
@@ -85,12 +80,13 @@ public class BetterMinecartWithFurnace implements ModInitializer {
 	private static void writeDefaults(Path file) throws IOException {
 		Files.createDirectories(file.getParent());
 		Files.write(file, List.of(
-				"# 更好的动力矿车 / Better Furnace Minecart",
+				"# Better Minecart with Furnace",
 				"#",
-				"# 动力矿车起步时每 tick 增加的速度，单位：格/tick。",
-				"# 允许范围 " + MIN_ACCELERATION + " ~ " + POWERED_RAIL_ACCELERATION + "（" + POWERED_RAIL_ACCELERATION + " 即充能动力铁轨的加速度，不能超过它）。",
-				"# 动力矿车最高速度为 0.2 格/tick，所以 0.01 表示约 20 tick（1 秒）加速到最高速度。",
-				"# 修改后需要重启服务器。",
+				"# Speed a minecart with furnace gains per tick while starting up, in blocks/tick.",
+				"# Its top speed is 0.2 blocks/tick, so 0.04 means about 5 ticks to reach top speed.",
+				"# For reference, an active powered rail accelerates minecarts by 0.06.",
+				"# If set too low (below about 0.03), starting uphill or while pushing other minecarts becomes sluggish or fails.",
+				"# Restart the server after changing this.",
 				ACCELERATION_KEY + "=" + DEFAULT_ACCELERATION
 		), StandardCharsets.UTF_8);
 	}

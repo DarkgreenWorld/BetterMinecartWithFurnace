@@ -1,7 +1,7 @@
-package betterminecartwithfurnace.mixin;
+package com.darkgreen_world.betterminecartwithfurnace.mixin;
 
-import betterminecartwithfurnace.BetterMinecartWithFurnace;
-import betterminecartwithfurnace.ExtinguishableMinecartWithFurnace;
+import com.darkgreen_world.betterminecartwithfurnace.BetterMinecartWithFurnace;
+import com.darkgreen_world.betterminecartwithfurnace.ExtinguishableMinecartWithFurnace;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,7 +36,7 @@ import net.minecraft.world.phys.Vec3;
 
 @Mixin(MinecartFurnace.class)
 public abstract class MinecartFurnaceMixin extends AbstractMinecart implements ExtinguishableMinecartWithFurnace {
-	/** 原版漏斗每 8 tick 传送一个物品。 */
+	/** Vanilla hoppers move one item every 8 ticks. */
 	@Unique
 	private static final int HOPPER_TRANSFER_INTERVAL = 8;
 
@@ -52,14 +52,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 	@Shadow
 	public abstract boolean addFuel(Vec3 interactingPos, ItemStack itemStack);
 
-	/** 上一次 applyNaturalSlowdown 返回的水平速度，以及它发生在哪个 tick。 */
-	@Unique
-	private double betterMinecartWithFurnace$lastSpeed;
-
-	@Unique
-	private int betterMinecartWithFurnace$lastSpeedTick;
-
-	/** 本 tick 开始时矿车是否在未充能的动力铁轨上（与原版 moveAlongTrack 判断刹车用的是同一格）。 */
+	/** Whether the minecart was on an inactive powered rail at the start of this tick (the same block vanilla moveAlongTrack checks for braking). */
 	@Unique
 	private boolean betterMinecartWithFurnace$onBrakeRail;
 
@@ -75,7 +68,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		return this.entityTags().contains(BetterMinecartWithFurnace.EXTINGUISHED_TAG);
 	}
 
-	// ---------------------------------------------------------------- 熄灭 / 重新点燃
+	// ---------------------------------------------------------------- Extinguishing / reigniting
 
 	@Override
 	public boolean betterMinecartWithFurnace$isBurning() {
@@ -104,7 +97,8 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		this.removeTag(BetterMinecartWithFurnace.EXTINGUISHED_TAG);
 		this.setHasFuel(this.fuel > 0);
 
-		// 被水熄灭的矿车 push 还在；空矿车由漏斗加的燃料则没有方向，这时和原版添加燃料一样朝远离点火者的方向走。
+		// A minecart put out with water still has its push. An empty one refuelled by a hopper has none,
+		// so it heads away from whoever lit it, like vanilla does when fuel is added.
 		if (this.push.lengthSqr() <= 1.0E-7) {
 			this.push = this.position().subtract(igniterPos).horizontal();
 		}
@@ -116,8 +110,8 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 			return;
 		}
 
-		// 两种物品都不是燃料，原版 interact 接下来什么也不做并返回 SUCCESS，所以不需要取消。
-		// 打火石只对熄灭状态的矿车有效：空矿车没有燃料，点不着。
+		// Neither item is fuel, so vanilla interact does nothing afterwards and returns SUCCESS; no need to cancel.
+		// Flint and steel only works on an extinguished minecart: an empty one has no fuel to light.
 		ItemStack itemStack = player.getItemInHand(hand);
 
 		if (itemStack.is(Items.WATER_BUCKET)) {
@@ -129,7 +123,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 	}
 
-	/** 玩家手持燃料右键（以及其他模组调用 addFuel）成功添加燃料时重新点燃；漏斗补充的不算。 */
+	/** Reignite when fuel is added by a player (or by another mod calling addFuel), but not when a hopper adds it. */
 	@Inject(method = "addFuel", at = @At("RETURN"))
 	private void betterMinecartWithFurnace$reigniteOnRefuel(Vec3 interactingPos, ItemStack itemStack, CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue() && !this.betterMinecartWithFurnace$refuellingFromHopper && this.betterMinecartWithFurnace$isExtinguished()) {
@@ -137,7 +131,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 	}
 
-	// ---------------------------------------------------------------- 熄灭期间冻结燃料；没在燃烧时可由漏斗补充
+	// ---------------------------------------------------------------- Fuel is frozen while extinguished; hoppers refuel it while not burning
 
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void betterMinecartWithFurnace$beforeTick(CallbackInfo ci) {
@@ -148,7 +142,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		BlockState rail = this.level().getBlockState(this.getCurrentBlockPosOrRailBelow());
 		this.betterMinecartWithFurnace$onBrakeRail = rail.is(Blocks.POWERED_RAIL) && !rail.getValue(PoweredRailBlock.POWERED);
 
-		// 原版 tick 末尾会 --fuel，这里先加回来；fuel 始终 > 0，所以原版也不会清空 push。
+		// Vanilla does --fuel at the end of tick, so add it back in advance. fuel stays > 0, so vanilla never clears push.
 		if (this.fuel > 0 && this.betterMinecartWithFurnace$isExtinguished()) {
 			this.fuel++;
 		}
@@ -161,7 +155,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 
 		if (this.fuel <= 0) {
-			// 熄灭状态必须有燃料可保留（标签可能是用命令加的）；没有就是普通的空矿车。
+			// "Extinguished" requires fuel to preserve (the tag may have been added by a command); without any it is just an empty minecart.
 			this.removeTag(BetterMinecartWithFurnace.EXTINGUISHED_TAG);
 		}
 
@@ -170,19 +164,22 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 	}
 
-	/** 熄灭期间客户端应当看到没点着的熔炉，也不冒烟。 */
+	/** While extinguished, clients should see an unlit furnace and no smoke. */
 	@ModifyVariable(method = "setHasFuel", at = @At("HEAD"), argsOnly = true)
 	private boolean betterMinecartWithFurnace$hideFlameWhileExtinguished(boolean fuel) {
 		return fuel && !this.betterMinecartWithFurnace$isExtinguished();
 	}
 
-	/** 从正上方的漏斗取一个燃料。只增加燃烧时间，不点燃，也不改变行进方向；空矿车加了燃料后进入熄灭状态。 */
+	/**
+	 * Takes one fuel item from the hopper directly above. This only adds burn time: it does not light the minecart or
+	 * change its direction. An empty minecart becomes extinguished once it has fuel.
+	 */
 	@Unique
 	private void betterMinecartWithFurnace$refuelFromHopperAbove() {
 		BlockPos hopperPos = this.blockPosition().above();
 		BlockState state = this.level().getBlockState(hopperPos);
 
-		// 和原版漏斗一样：必须朝下，且没有被红石信号锁住。
+		// Same as a vanilla hopper: it has to point down and must not be locked by redstone.
 		if (!state.is(Blocks.HOPPER) || state.getValue(HopperBlock.FACING) != Direction.DOWN || !state.getValue(HopperBlock.ENABLED)) {
 			return;
 		}
@@ -191,7 +188,8 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 			return;
 		}
 
-		// addFuel 会按“交互位置”重设 push，并且（见上面的注入）会重新点燃，这两件事漏斗都不该做。
+		// addFuel resets push from the "interacting position" and (see the injection above) reignites;
+		// a hopper should do neither.
 		Vec3 heading = this.push;
 		this.betterMinecartWithFurnace$refuellingFromHopper = true;
 
@@ -212,90 +210,80 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 	}
 
-	// ---------------------------------------------------------------- 发动机：停机条件与逐渐加速
+	// ---------------------------------------------------------------- Engine: when it is off, and gradual acceleration
 
 	@WrapMethod(method = "applyNaturalSlowdown")
 	private Vec3 betterMinecartWithFurnace$applyNaturalSlowdown(Vec3 deltaMovement, Operation<Vec3> original) {
-		// 原版把 push 投影到带着重力分量（y = -0.04）的 deltaMovement 上，低速时 push 会几乎竖直。
-		// 原版一 tick 就冲过了低速段所以无所谓，但逐渐加速会在低速段停留很久。返回值的 y 本来就恒为 0。
+		// deltaMovement still carries gravity (y = -0.04) here; only the horizontal part matters, and the y of the
+		// returned vector is always 0 anyway.
 		Vec3 movement = deltaMovement.horizontal();
+		Vec3 heading = betterMinecartWithFurnace$alongTrack(this.push, movement);
 		Vec3 result;
 
-		// 熄灭时发动机不工作；在未充能的动力铁轨上也不工作，这样刹车就和原版普通矿车一样
-		// （新旧两套矿车物理都是每 tick 速度减半、低于 0.03 归零），否则原版的 push 会直接顶过刹车。
+		// The engine is off while extinguished. It is also off on an inactive powered rail, so braking works like it does
+		// for a normal vanilla minecart (both physics implementations halve the speed each tick and zero it below 0.03);
+		// otherwise the vanilla push would simply overpower the brake.
 		if (this.betterMinecartWithFurnace$onBrakeRail || this.betterMinecartWithFurnace$isExtinguished()) {
-			Vec3 heading = this.push;
 			this.push = Vec3.ZERO;
 
 			try {
 				result = original.call(movement);
 			} finally {
-				this.push = betterMinecartWithFurnace$alongTrack(heading, movement);
+				this.push = heading;
 			}
 		} else {
+			this.push = heading;
 			result = original.call(movement);
 		}
 
 		return this.betterMinecartWithFurnace$limitAcceleration(movement, result);
 	}
 
-	/** 与原版 calculateNewPushAlong 相同：让行进方向跟着轨道转弯，发动机停机时滑行过弯也不会丢。 */
+	/**
+	 * Points push along the track (the line of movement), keeping its length and which way it faces.
+	 *
+	 * <p>Vanilla only does this once the minecart is faster than about 0.032 blocks/tick, which it normally is after one
+	 * tick. With gradual acceleration it can stay slower than that, push would keep pointing away from the player
+	 * instead of along the track, and the minecart would crawl forever. Vanilla also turns a push that is exactly
+	 * perpendicular to the track into zero, which leaves a burning minecart that never moves again; here it follows
+	 * the direction of movement instead.
+	 */
 	@Unique
 	private static Vec3 betterMinecartWithFurnace$alongTrack(Vec3 heading, Vec3 movement) {
-		if (heading.horizontalDistanceSqr() > 1.0E-4 && movement.horizontalDistanceSqr() > 0.001) {
-			Vec3 realigned = heading.projectedOn(movement).normalize().scale(heading.length());
+		double speed = movement.horizontalDistance();
+		double length = heading.horizontalDistance();
 
-			if (realigned.lengthSqr() > 1.0E-7) {
-				return realigned;
-			}
+		if (speed < 1.0E-6 || length < 1.0E-6) {
+			return heading;
 		}
 
-		return heading;
+		double scale = (heading.x * movement.x + heading.z * movement.z < 0.0 ? -length : length) / speed;
+		return new Vec3(movement.x * scale, 0.0, movement.z * scale);
 	}
 
 	/**
-	 * 原版每 tick 做 {@code 0.8 * v + push}，而 push 的长度是加燃料时玩家到矿车的距离（几格），
-	 * 所以一 tick 就远超最高速度。这里把发动机带来的增速限制为每 tick {@code acceleration}，
-	 * 直到矿车达到最高速度为止；之后完全交还给原版，推车、爬坡的力度不变。
+	 * Vanilla does {@code 0.8 * v + push} every tick, and the length of push is the distance (several blocks) between
+	 * the player and the minecart when fuel was added, so it exceeds top speed within a single tick. Until the minecart
+	 * reaches top speed, this limits the speed gained per tick to {@code acceleration}; after that it is plain
+	 * vanilla, so pushing other minecarts and climbing slopes are as strong as before.
 	 */
 	@Unique
 	private Vec3 betterMinecartWithFurnace$limitAcceleration(Vec3 before, Vec3 after) {
 		double speed = after.horizontalDistance();
-		boolean continuous = this.betterMinecartWithFurnace$lastSpeedTick == this.tickCount - 1;
-		double previous = this.betterMinecartWithFurnace$lastSpeed;
-		this.betterMinecartWithFurnace$lastSpeedTick = this.tickCount;
-		this.betterMinecartWithFurnace$lastSpeed = speed;
 
 		if (speed < 1.0E-9 || !(this.level() instanceof ServerLevel level)) {
 			return after;
 		}
 
-		// 矿车在发动机推进方向上已有的速度（还在反向滑行时为负）。
-		double current = (before.x * after.x + before.z * after.z) / speed;
+		// Speed the minecart already had along its new direction. It is negative when reversing, which counts as 0,
+		// i.e. it accelerates again from a standstill.
+		double current = Math.max(0.0, (before.x * after.x + before.z * after.z) / speed);
+		double allowed = current + BetterMinecartWithFurnace.acceleration();
 
-		if (current >= this.getMaxSpeed(level) - 1.0E-6) {
+		if (current >= this.getMaxSpeed(level) || speed <= allowed) {
 			return after;
 		}
 
-		double acceleration = BetterMinecartWithFurnace.acceleration();
-		double maxAcceleration = BetterMinecartWithFurnace.POWERED_RAIL_ACCELERATION;
-		double allowed;
-
-		if (continuous && current > previous) {
-			// 这一 tick 已经被外力加速过（下坡、被推），发动机只补到总增速不超过动力铁轨为止。
-			allowed = current + Math.min(acceleration, Math.max(0.0, maxAcceleration - (current - previous)));
-		} else {
-			// 上坡重力、推其他矿车等造成的损失先补回来再加速，否则加速度一小就起不了步；
-			// 但单 tick 的总增速仍不超过动力铁轨。减速、掉头不受限制，掉头后从 0 重新加速。
-			double base = continuous ? Math.max(current, previous) : current;
-			allowed = Math.max(acceleration, Math.min(base + acceleration, current + maxAcceleration));
-		}
-
-		if (speed <= allowed) {
-			return after;
-		}
-
-		this.betterMinecartWithFurnace$lastSpeed = allowed;
 		double scale = allowed / speed;
 		return new Vec3(after.x * scale, after.y, after.z * scale);
 	}
