@@ -13,7 +13,7 @@ import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Same rule under the experimental minecart physics (minecart_improvements): active powered rails do not boost a burning minecart with furnace. */
+/** Active powered rails do not boost a burning minecart with furnace. */
 @Mixin(NewMinecartBehavior.class)
 public abstract class NewMinecartBehaviorMixin extends MinecartBehavior {
 	protected NewMinecartBehaviorMixin(AbstractMinecart minecart) {

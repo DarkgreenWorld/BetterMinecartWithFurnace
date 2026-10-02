@@ -52,12 +52,19 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 	@Shadow
 	public abstract boolean addFuel(Vec3 interactingPos, ItemStack itemStack);
 
-	/** Whether the minecart was on an inactive powered rail at the start of this tick (the same block vanilla moveAlongTrack checks for braking). */
+	/** On an inactive powered rail at the start of this tick. */
 	@Unique
 	private boolean betterMinecartWithFurnace$onBrakeRail;
 
 	@Unique
 	private boolean betterMinecartWithFurnace$refuellingFromHopper;
+
+	/** Speed the engine last delivered, and the tick it did so. */
+	@Unique
+	private double betterMinecartWithFurnace$lastSpeed;
+
+	@Unique
+	private int betterMinecartWithFurnace$lastSpeedTick;
 
 	protected MinecartFurnaceMixin(EntityType<?> type, Level level) {
 		super(type, level);
@@ -67,8 +74,6 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 	public boolean betterMinecartWithFurnace$isExtinguished() {
 		return this.entityTags().contains(BetterMinecartWithFurnace.EXTINGUISHED_TAG);
 	}
-
-	// ---------------------------------------------------------------- Extinguishing / reigniting
 
 	@Override
 	public boolean betterMinecartWithFurnace$isBurning() {
@@ -97,8 +102,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		this.removeTag(BetterMinecartWithFurnace.EXTINGUISHED_TAG);
 		this.setHasFuel(this.fuel > 0);
 
-		// A minecart put out with water still has its push. An empty one refuelled by a hopper has none,
-		// so it heads away from whoever lit it, like vanilla does when fuel is added.
+		// An empty minecart refuelled by a hopper has no push: head away from the igniter.
 		if (this.push.lengthSqr() <= 1.0E-7) {
 			this.push = this.position().subtract(igniterPos).horizontal();
 		}
@@ -110,8 +114,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 			return;
 		}
 
-		// Neither item is fuel, so vanilla interact does nothing afterwards and returns SUCCESS; no need to cancel.
-		// Flint and steel only works on an extinguished minecart: an empty one has no fuel to light.
+		// Neither item is fuel, so vanilla interact does nothing afterwards.
 		ItemStack itemStack = player.getItemInHand(hand);
 
 		if (itemStack.is(Items.WATER_BUCKET)) {
@@ -123,15 +126,13 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 	}
 
-	/** Reignite when fuel is added by a player (or by another mod calling addFuel), but not when a hopper adds it. */
+	/** Fuel added by anything but a hopper reignites. */
 	@Inject(method = "addFuel", at = @At("RETURN"))
 	private void betterMinecartWithFurnace$reigniteOnRefuel(Vec3 interactingPos, ItemStack itemStack, CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue() && !this.betterMinecartWithFurnace$refuellingFromHopper && this.betterMinecartWithFurnace$isExtinguished()) {
 			this.betterMinecartWithFurnace$reignite(interactingPos);
 		}
 	}
-
-	// ---------------------------------------------------------------- Fuel is frozen while extinguished; hoppers refuel it while not burning
 
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void betterMinecartWithFurnace$beforeTick(CallbackInfo ci) {
@@ -142,7 +143,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		BlockState rail = this.level().getBlockState(this.getCurrentBlockPosOrRailBelow());
 		this.betterMinecartWithFurnace$onBrakeRail = rail.is(Blocks.POWERED_RAIL) && !rail.getValue(PoweredRailBlock.POWERED);
 
-		// Vanilla does --fuel at the end of tick, so add it back in advance. fuel stays > 0, so vanilla never clears push.
+		// Cancels the --fuel at the end of the vanilla tick.
 		if (this.fuel > 0 && this.betterMinecartWithFurnace$isExtinguished()) {
 			this.fuel++;
 		}
@@ -155,7 +156,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 
 		if (this.fuel <= 0) {
-			// "Extinguished" requires fuel to preserve (the tag may have been added by a command); without any it is just an empty minecart.
+			// Extinguished without fuel is just an empty minecart.
 			this.removeTag(BetterMinecartWithFurnace.EXTINGUISHED_TAG);
 		}
 
@@ -164,22 +165,19 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 	}
 
-	/** While extinguished, clients should see an unlit furnace and no smoke. */
+	/** Shows the furnace unlit while extinguished. */
 	@ModifyVariable(method = "setHasFuel", at = @At("HEAD"), argsOnly = true)
 	private boolean betterMinecartWithFurnace$hideFlameWhileExtinguished(boolean fuel) {
 		return fuel && !this.betterMinecartWithFurnace$isExtinguished();
 	}
 
-	/**
-	 * Takes one fuel item from the hopper directly above. This only adds burn time: it does not light the minecart or
-	 * change its direction. An empty minecart becomes extinguished once it has fuel.
-	 */
+	/** Takes one fuel item from a hopper above, without lighting the minecart or changing its direction. */
 	@Unique
 	private void betterMinecartWithFurnace$refuelFromHopperAbove() {
 		BlockPos hopperPos = this.blockPosition().above();
 		BlockState state = this.level().getBlockState(hopperPos);
 
-		// Same as a vanilla hopper: it has to point down and must not be locked by redstone.
+		// Like a vanilla hopper: pointing down and not locked.
 		if (!state.is(Blocks.HOPPER) || state.getValue(HopperBlock.FACING) != Direction.DOWN || !state.getValue(HopperBlock.ENABLED)) {
 			return;
 		}
@@ -188,8 +186,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 			return;
 		}
 
-		// addFuel resets push from the "interacting position" and (see the injection above) reignites;
-		// a hopper should do neither.
+		// addFuel would reset push and reignite.
 		Vec3 heading = this.push;
 		this.betterMinecartWithFurnace$refuellingFromHopper = true;
 
@@ -210,19 +207,14 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 		}
 	}
 
-	// ---------------------------------------------------------------- Engine: when it is off, and gradual acceleration
-
 	@WrapMethod(method = "applyNaturalSlowdown")
 	private Vec3 betterMinecartWithFurnace$applyNaturalSlowdown(Vec3 deltaMovement, Operation<Vec3> original) {
-		// deltaMovement still carries gravity (y = -0.04) here; only the horizontal part matters, and the y of the
-		// returned vector is always 0 anyway.
+		// The y component is gravity; vanilla drops it too.
 		Vec3 movement = deltaMovement.horizontal();
-		Vec3 heading = betterMinecartWithFurnace$alongTrack(this.push, movement);
+		Vec3 heading = betterMinecartWithFurnace$heading(this.push, movement);
 		Vec3 result;
 
-		// The engine is off while extinguished. It is also off on an inactive powered rail, so braking works like it does
-		// for a normal vanilla minecart (both physics implementations halve the speed each tick and zero it below 0.03);
-		// otherwise the vanilla push would simply overpower the brake.
+		// Engine off: extinguished, or braked by an inactive powered rail like a normal minecart.
 		if (this.betterMinecartWithFurnace$onBrakeRail || this.betterMinecartWithFurnace$isExtinguished()) {
 			this.push = Vec3.ZERO;
 
@@ -240,50 +232,63 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements E
 	}
 
 	/**
-	 * Points push along the track (the line of movement), keeping its length and which way it faces.
-	 *
-	 * <p>Vanilla only does this once the minecart is faster than about 0.032 blocks/tick, which it normally is after one
-	 * tick. With gradual acceleration it can stay slower than that, push would keep pointing away from the player
-	 * instead of along the track, and the minecart would crawl forever. Vanilla also turns a push that is exactly
-	 * perpendicular to the track into zero, which leaves a burning minecart that never moves again; here it follows
-	 * the direction of movement instead.
+	 * Push scaled to the configured thrust and aligned with the track. Vanilla only aligns it above
+	 * 0.032 blocks/tick, and zeroes it when it is perpendicular to the track.
 	 */
 	@Unique
-	private static Vec3 betterMinecartWithFurnace$alongTrack(Vec3 heading, Vec3 movement) {
-		double speed = movement.horizontalDistance();
-		double length = heading.horizontalDistance();
+	private static Vec3 betterMinecartWithFurnace$heading(Vec3 push, Vec3 movement) {
+		double length = push.horizontalDistance();
 
-		if (speed < 1.0E-6 || length < 1.0E-6) {
-			return heading;
+		if (length < 1.0E-6) {
+			// No direction (empty minecart)
+			return push;
 		}
 
-		double scale = (heading.x * movement.x + heading.z * movement.z < 0.0 ? -length : length) / speed;
+		double thrust = BetterMinecartWithFurnace.thrust();
+		double speed = movement.horizontalDistance();
+
+		if (speed < 1.0E-6) {
+			return new Vec3(push.x * thrust / length, 0.0, push.z * thrust / length);
+		}
+
+		double scale = (push.x * movement.x + push.z * movement.z < 0.0 ? -thrust : thrust) / speed;
 		return new Vec3(movement.x * scale, 0.0, movement.z * scale);
 	}
 
 	/**
-	 * Vanilla does {@code 0.8 * v + push} every tick, and the length of push is the distance (several blocks) between
-	 * the player and the minecart when fuel was added, so it exceeds top speed within a single tick. Until the minecart
-	 * reaches top speed, this limits the speed gained per tick to {@code acceleration}; after that it is plain
-	 * vanilla, so pushing other minecarts and climbing slopes are as strong as before.
+	 * Below the speed limit the engine delivers at most acceleration more than it did the tick before.
+	 * Compared with what it delivered, not with the current speed, which slopes and linked trains keep reducing.
 	 */
 	@Unique
 	private Vec3 betterMinecartWithFurnace$limitAcceleration(Vec3 before, Vec3 after) {
 		double speed = after.horizontalDistance();
+		boolean ranLastTick = this.betterMinecartWithFurnace$lastSpeedTick == this.tickCount - 1;
+		double lastSpeed = this.betterMinecartWithFurnace$lastSpeed;
+		this.betterMinecartWithFurnace$lastSpeedTick = this.tickCount;
+		this.betterMinecartWithFurnace$lastSpeed = speed;
 
 		if (speed < 1.0E-9 || !(this.level() instanceof ServerLevel level)) {
 			return after;
 		}
 
-		// Speed the minecart already had along its new direction. It is negative when reversing, which counts as 0,
-		// i.e. it accelerates again from a standstill.
-		double current = Math.max(0.0, (before.x * after.x + before.z * after.z) / speed);
-		double allowed = current + BetterMinecartWithFurnace.acceleration();
+		// Speed along the new direction; negative when reversing.
+		double current = (before.x * after.x + before.z * after.z) / speed;
 
-		if (current >= this.getMaxSpeed(level) || speed <= allowed) {
+		if (current >= this.getMaxSpeed(level)) {
 			return after;
 		}
 
+		double allowed = BetterMinecartWithFurnace.acceleration();
+
+		if (current >= 0.0) {
+			allowed += ranLastTick ? Math.max(current, lastSpeed) : current;
+		}
+
+		if (speed <= allowed) {
+			return after;
+		}
+
+		this.betterMinecartWithFurnace$lastSpeed = allowed;
 		double scale = allowed / speed;
 		return new Vec3(after.x * scale, after.y, after.z * scale);
 	}

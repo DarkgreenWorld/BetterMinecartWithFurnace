@@ -15,12 +15,7 @@ import net.minecraft.world.phys.AABB;
 
 @Mixin(FlintAndSteelDispenseItemBehavior.class)
 public abstract class FlintAndSteelDispenseItemBehaviorMixin {
-	/**
-	 * When a dispenser uses flint and steel, vanilla first calls tryIgniteExplosiveEntities to ignite entities in the
-	 * block in front (sulfur cubes). If that returns true no fire is placed, and durability and sounds are handled as
-	 * usual. Extinguished minecarts with furnace are counted here too.
-	 * An empty minecart with furnace is not "extinguished" and cannot be lit.
-	 */
+	/** Also lights extinguished minecarts with furnace in the block in front. */
 	@ModifyExpressionValue(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/FlintAndSteelDispenseItemBehavior;tryIgniteExplosiveEntities(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)Z"))
 	private boolean betterMinecartWithFurnace$igniteMinecartsWithFurnace(boolean ignited, BlockSource source, ItemStack dispensed) {
 		BlockPos targetPos = source.pos().relative(source.state().getValue(DispenserBlock.FACING));

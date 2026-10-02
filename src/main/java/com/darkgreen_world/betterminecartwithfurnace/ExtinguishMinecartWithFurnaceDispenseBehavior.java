@@ -11,10 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.AABB;
 
-/**
- * Water bucket in a dispenser: if a minecart with furnace is in the block in front, extinguish it instead of
- * placing water (the water is not used up, same as when a player does it); otherwise fall back to vanilla.
- */
+/** Dispensed water bucket: puts out a minecart with furnace in front instead of placing water. */
 public final class ExtinguishMinecartWithFurnaceDispenseBehavior implements DispenseItemBehavior {
 	private final DispenseItemBehavior fallback;
 
@@ -40,7 +37,7 @@ public final class ExtinguishMinecartWithFurnaceDispenseBehavior implements Disp
 			}
 		}
 
-		// Same feedback as vanilla OptionalDispenseItemBehavior: click and smoke on success, the "empty" sound on failure.
+		// Same level events as vanilla OptionalDispenseItemBehavior
 		level.levelEvent(extinguished ? 1000 : 1001, source.pos(), 0);
 
 		if (extinguished) {

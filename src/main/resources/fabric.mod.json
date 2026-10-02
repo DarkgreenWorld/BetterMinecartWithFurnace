@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "better_minecart_with_furnace",
 	"version": "${version}",
-	"name": "Better Minecart with Furnace",
-	"description": "Minecarts with furnace accelerate gradually, can be extinguished with a water bucket and relit with flint and steel or fuel (by hand or by dispenser), can be refuelled by a hopper above while not burning, are stopped by inactive powered rails, and are not boosted by active ones while burning. Server-side only.",
+	"name": "Provide a more reasonable and user-friendly Minecart with Furnace.",
+	"description": "",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

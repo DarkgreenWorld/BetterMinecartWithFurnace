@@ -19,12 +19,8 @@ public abstract class OldMinecartBehaviorMixin extends MinecartBehavior {
 	}
 
 	/**
-	 * The {@code state.is(Blocks.POWERED_RAIL)} check at the top of moveAlongTrack decides both boosting (powerTrack)
-	 * and braking (haltTrack). For a burning minecart with furnace, an active powered rail is treated as a plain rail
-	 * (no boost) while an inactive one still brakes. Empty and extinguished ones are left alone and can still be
-	 * launched by powered rails.
-	 * is(T) is a generic default method of TypedInstance, so its erased parameter is Object; only one of the two
-	 * {@code @At}s will match.
+	 * This check decides both boosting and braking: for a burning minecart with furnace, an active powered
+	 * rail counts as a plain rail. is(T) is declared in TypedInstance, so only one of the targets matches.
 	 */
 	@ModifyExpressionValue(method = "moveAlongTrack", at = {
 			@At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Ljava/lang/Object;)Z"),

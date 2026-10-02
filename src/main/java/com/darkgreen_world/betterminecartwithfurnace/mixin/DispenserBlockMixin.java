@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.DispenserBlock;
 
 @Mixin(DispenserBlock.class)
 public abstract class DispenserBlockMixin {
-	/** The vanilla bucket behavior is an anonymous class and awkward to inject into, so wrap it where it is looked up. */
+	/** The vanilla bucket behavior is an anonymous class, so it is wrapped here instead. */
 	@ModifyReturnValue(method = "getDispenseMethod", at = @At("RETURN"))
 	private DispenseItemBehavior betterMinecartWithFurnace$extinguishWithWaterBucket(DispenseItemBehavior original, Level level, ItemStack itemStack) {
 		return itemStack.is(Items.WATER_BUCKET) ? new ExtinguishMinecartWithFurnaceDispenseBehavior(original) : original;
