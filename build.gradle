@@ -9,11 +9,19 @@ dependencies {
 
 processResources {
 	def version = project.version
+	def name = project.mod_name
+	def id = project.mod_id
 	inputs.property "version", version
+	inputs.property "name", name
+	inputs.property "id", id
 	filteringCharset = "UTF-8"
 
 	filesMatching("fabric.mod.json") {
-		expand "version": version
+		expand(
+			"version": version,
+			"name": name,
+			"id": id
+		)
 	}
 }
 

@@ -1,10 +1,21 @@
 {
 	"schemaVersion": 1,
-	"id": "better_minecart_with_furnace",
+	"id": "${id}",
 	"version": "${version}",
-	"name": "Provide a more reasonable and user-friendly Minecart with Furnace.",
-	"description": "",
+	"name": "${name}",
+	"description": "Provide a more reasonable and user-friendly Minecart with Furnace.",
+	"authors": [
+	"Darkgreen_World",
+	"Claude Opus 5.5",
+    "UtmostStar"
+	],
+	"contributors": [],
 	"environment": "*",
+	  "contact": {
+    "sources": "https://github.com/DarkgreenWorld/BetterMinecartWithFurnace"
+	},
+	"license": "GPL-v3",
+	"icon": "assets/betterminecartwithfurnace/icon.png",
 	"entrypoints": {
 		"main": [
 			"com.darkgreen_world.betterminecartwithfurnace.BetterMinecartWithFurnace"
