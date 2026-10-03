@@ -27,6 +27,7 @@
 	"depends": {
 		"fabricloader": ">=0.16.0",
 		"minecraft": "~26.3",
-		"java": ">=25"
+		"java": ">=25",
+		"fabric-events-interaction-v0": "*"
 	}
 }

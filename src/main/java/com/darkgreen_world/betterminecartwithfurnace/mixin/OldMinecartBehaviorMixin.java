@@ -1,12 +1,12 @@
 package com.darkgreen_world.betterminecartwithfurnace.mixin;
 
-import com.darkgreen_world.betterminecartwithfurnace.ExtinguishableMinecartWithFurnace;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.entity.vehicle.minecart.OldMinecartBehavior;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
@@ -27,7 +27,7 @@ public abstract class OldMinecartBehaviorMixin extends MinecartBehavior {
 			@At(value = "INVOKE", target = "Lnet/minecraft/core/TypedInstance;is(Ljava/lang/Object;)Z")
 	})
 	private boolean betterMinecartWithFurnace$ignoreActivePoweredRail(boolean isPoweredRail) {
-		if (isPoweredRail && this.minecart instanceof ExtinguishableMinecartWithFurnace furnace && furnace.betterMinecartWithFurnace$isBurning()) {
+		if (isPoweredRail && this.minecart instanceof MinecartFurnace furnace && ((MinecartFurnaceAccessor) furnace).betterMinecartWithFurnace$hasFuel()) {
 			BlockState state = this.level().getBlockState(this.minecart.getCurrentBlockPosOrRailBelow());
 			return !(state.is(Blocks.POWERED_RAIL) && state.getValue(PoweredRailBlock.POWERED));
 		}

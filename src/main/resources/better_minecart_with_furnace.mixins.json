@@ -3,8 +3,7 @@
 	"package": "com.darkgreen_world.betterminecartwithfurnace.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"DispenserBlockMixin",
-		"FlintAndSteelDispenseItemBehaviorMixin",
+		"MinecartFurnaceAccessor",
 		"MinecartFurnaceMixin",
 		"NewMinecartBehaviorMixin",
 		"OldMinecartBehaviorMixin"

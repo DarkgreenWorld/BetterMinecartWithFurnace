@@ -5,23 +5,16 @@ plugins {
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation fabricApi.module("fabric-events-interaction-v0", project.fabric_api_version)
 }
 
 processResources {
 	def version = project.version
-	def name = project.mod_name
-	def id = project.mod_id
 	inputs.property "version", version
-	inputs.property "name", name
-	inputs.property "id", id
 	filteringCharset = "UTF-8"
 
 	filesMatching("fabric.mod.json") {
-		expand(
-			"version": version,
-			"name": name,
-			"id": id
-		)
+		expand "version": version
 	}
 }
 

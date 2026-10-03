@@ -1,6 +1,6 @@
 # Better Furnace Minecart 更好的动力矿车
 
-A **server-side only** Fabric mod for 26.3. Does not depend on the Fabric API.
+A **server-side only** Fabric mod for 26.3. Requires the Fabric API.
 
 ## Features
 
