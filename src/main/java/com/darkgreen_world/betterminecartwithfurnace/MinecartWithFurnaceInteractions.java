@@ -8,7 +8,6 @@ import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-/** Right-clicking a minecart with furnace: water bucket puts it out; flint and steel or fuel lights it again. */
 public final class MinecartWithFurnaceInteractions {
 	private MinecartWithFurnaceInteractions() {
 	}

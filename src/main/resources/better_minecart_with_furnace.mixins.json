@@ -4,9 +4,7 @@
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
 		"MinecartFurnaceAccessor",
-		"MinecartFurnaceMixin",
-		"NewMinecartBehaviorMixin",
-		"OldMinecartBehaviorMixin"
+		"MinecartFurnaceMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
