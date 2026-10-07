@@ -1,6 +1,10 @@
 # Better Furnace Minecart 更好的动力矿车
+[![Linkart Modrinth](https://img.shields.io/badge/Published%20on-Modrinth-1bd96a?logo=modrinth&logoColor=bluegreen)]()
+[![CurseForge](https://img.shields.io/badge/Published%20on-CurseForge-f16436?logo=curseforge&logoColor=orange)]()
+[![Linkart GitHub](https://img.shields.io/badge/%E2%80%8B-GitHub-gray?logo=github&logoColor=black&labelColor=white)](https://github.com/DarkgreenWorld/Linkart-Overhaul)
 
-A **server-side only** Fabric mod for 26.3. Requires the Fabric API.
+### A Fabric mod for 26.3. Server required, client optional.
+#### Requires <img alt="Fabric API icon" src="https://cdn.modrinth.com/data/P7dR8mSH/icon.png" width="20" height="20"> [Fabric API](https://modrinth.com/mod/fabric-api)
 
 ## Features
 
