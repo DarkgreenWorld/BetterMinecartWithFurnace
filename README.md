@@ -5,10 +5,7 @@ A **server-side only** Fabric mod for 26.3. Requires the Fabric API.
 ## Features
 
 - **Gradual acceleration**: A lit furnace minecart no longer reaches maximum speed in a single tick; instead, it accelerates uniformly according to its acceleration.
-- **Powered Rails**:
-  - An unpowered powered rail provides no thrust from the furnace minecart. Fuel is still consumed while stopped; once the rail is powered, the minecart can accelerate away.
-  - A powered powered rail will not accelerate a **currently burning** furnace minecart.
-  - An extinguished furnace minecart can be accelerated by a powered powered rail.
+- **Powered Rails**: An unpowered powered rail slows down a Minecart with Furnace, just like any other minecart. Fuel is still consumed while stopped; once the rail is powered, the minecart can accelerate away.
 - **Water Bucket Extinguishing**: Right-clicking a lit furnace minecart with a water bucket in the main hand, or activating a dispenser loaded with a water bucket facing the minecart, will extinguish it. Remaining burn time and travel direction are preserved, and the water bucket is not consumed. Momentum is retained after extinguishing.
 - **Hopper Refueling**: If there is a downward-facing, non-redstone-locked hopper directly above an extinguished furnace minecart, 1 coal/charcoal is taken from it every 8 ticks until the minecart is full. The hopper only refuels the minecart and does not ignite it. A burning minecart will not take fuel from a hopper.
 - Ways to relight an extinguished minecart:
@@ -27,9 +24,10 @@ The extinguished state is recorded with the entity tag `better_minecart_with_fur
 On startup, `config/better_minecart_with_furnace.properties` is generated:
 
 ```properties
-thrust=0.6
+thrust=1.0
+maxAcceleration=0.04
 ```
-Acceleration = thrust / 15
+See the config file comments for details.
 
 If you also have Linkart Overhaul installed, thrust will participate in determining the maximum speed at which the furnace minecart can pull a train of minecarts.
 
@@ -38,5 +36,5 @@ If you also have Linkart Overhaul installed, thrust will participate in determin
 Requires JDK 25 and Gradle 9.5 or above:
 
 ```bash
-gradle build
+gradlew build
 ```
