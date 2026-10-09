@@ -1,10 +1,11 @@
-# Better Furnace Minecart 更好的动力矿车
+# Better Furnace Minecart
 [![Modrinth](https://img.shields.io/badge/Published%20on-Modrinth-1bd96a?logo=modrinth&logoColor=bluegreen)](https://modrinth.com/mod/better-minecart-with-furnace)
 [![CurseForge](https://img.shields.io/badge/Published%20on-CurseForge-f16436?logo=curseforge&logoColor=orange)](https://www.curseforge.com/minecraft/mc-mods/better-minecart-with-furnace/)
-[![GitHub](https://img.shields.io/badge/%E2%80%8B-GitHub-gray?logo=github&logoColor=black&labelColor=white)](https://github.com/DarkgreenWorld/Linkart-Overhaul)
+[![GitHub](https://img.shields.io/badge/GitHub-gray?logo=github&logoColor=black&labelColor=white)](https://github.com/DarkgreenWorld/Linkart-Overhaul)
 
-### A Fabric mod for 26.3. Server required, client optional.
-#### Requires <img alt="Fabric API icon" src="https://cdn.modrinth.com/data/P7dR8mSH/icon.png" width="20" height="20"> [Fabric API](https://modrinth.com/mod/fabric-api)
+**A Fabric mod for 26.3. Server required, client optional.**
+
+Requires <img alt="Fabric API icon" src="https://cdn.modrinth.com/data/P7dR8mSH/icon.png" width="20" height="20"> [Fabric API](https://modrinth.com/mod/fabric-api)
 
 ## Features
 
