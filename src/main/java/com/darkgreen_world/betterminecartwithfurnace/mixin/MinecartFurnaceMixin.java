@@ -229,7 +229,6 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements B
 			if (this.addFuel(this.position(), hopper.getItem(slot))) {
 				// addFuel would aim it away from the hopper.
 				this.push = heading;
-				this.addTag(Extinguishing.TAG);
 				hopper.removeItem(slot, 1);
 				hopper.setChanged();
 				return;
