@@ -87,8 +87,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements B
 			this.removeTag(Extinguishing.TAG);
 		}
 
-		boolean burning = this.fuel > 0 && !Extinguishing.isExtinguished(this);
-
+		//boolean burning = this.fuel > 0 && !Extinguishing.isExtinguished(this);
 		if (/*!burning && */this.tickCount % 8 == 0) {
 			this.betterMinecartWithFurnace$refuelFromHopperAbove();
 		}
@@ -226,8 +225,15 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements B
 		Vec3 heading = this.push;
 
 		for (int slot = 0; slot < hopper.getContainerSize(); slot++) {
-			if (this.addFuel(this.position(), hopper.getItem(slot))) {
-				// addFuel would aim it away from the hopper.
+			// addFuel would aim it away from the hopper.
+			if (this.fuel <= 0 && this.addFuel(this.position(), hopper.getItem(slot))) {
+				this.push = heading;
+				this.addTag(Extinguishing.TAG);
+				hopper.removeItem(slot, 1);
+				hopper.setChanged();
+				return;
+			}
+			else if(this.fuel > 0 && this.addFuel(this.position(), hopper.getItem(slot))) {
 				this.push = heading;
 				hopper.removeItem(slot, 1);
 				hopper.setChanged();
