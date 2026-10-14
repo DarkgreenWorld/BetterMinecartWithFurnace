@@ -9,10 +9,14 @@ Requires <img alt="Fabric API icon" src="https://cdn.modrinth.com/data/P7dR8mSH/
 
 ## Features
 
-- **Gradual acceleration**: A lit furnace minecart no longer reaches maximum speed in a single tick; instead, it accelerates uniformly according to its acceleration.
-- **Powered Rails**: An unpowered powered rail slows down a Minecart with Furnace, just like any other minecart. Fuel is still consumed while stopped; once the rail is powered, the minecart can accelerate away.
-- **Water Bucket Extinguishing**: Right-clicking a lit furnace minecart with a water bucket in the main hand, or activating a dispenser loaded with a water bucket facing the minecart, will extinguish it. Remaining burn time and travel direction are preserved, and the water bucket is not consumed. Momentum is retained after extinguishing.
-- **Hopper Refueling**: If there is a downward-facing, non-redstone-locked hopper directly above an furnace minecart, 1 coal/charcoal is taken from it every 8 ticks until the minecart is full. The hopper only refuels the minecart and does not ignite it. A burning minecart will not take fuel from a hopper.
+- Gradual acceleration: A lit furnace minecart no longer reaches maximum speed in a single tick; instead, it accelerates uniformly according to its acceleration.
+
+- Powered Rails Brake: An unpowered powered rail slows down a Minecart with Furnace, just like any other minecart. Fuel is still consumed while stopped; once the rail is powered, the minecart can accelerate away.
+
+- Water Bucket Extinguishing: Right-clicking a lit furnace minecart with a water bucket in the main hand, or activating a dispenser loaded with a water bucket facing the minecart, will extinguish it. Remaining burn time and travel direction are preserved, and the water bucket is not consumed. Momentum is retained after extinguishing.
+
+- Hopper Refueling: If there is a downward-facing, non-redstone-locked hopper directly above an furnace minecart, 1 coal/charcoal is taken from it every 8 ticks until the minecart is full. The hopper only refuels the minecart and does not ignite it.
+
 - Ways to relight an extinguished minecart:
   - Right-click with flint and steel in the main hand; right-click with coal/charcoal in the main hand to refuel; a dispenser loaded with flint and steel facing the minecart and activated.
   - After being lit, it travels in the direction it was moving before being extinguished; if there is no "previous direction," it moves away from the player/dispenser.
