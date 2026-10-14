@@ -89,7 +89,7 @@ public abstract class MinecartFurnaceMixin extends AbstractMinecart implements B
 
 		boolean burning = this.fuel > 0 && !Extinguishing.isExtinguished(this);
 
-		if (!burning && this.tickCount % 8 == 0) {
+		if (/*!burning && */this.tickCount % 8 == 0) {
 			this.betterMinecartWithFurnace$refuelFromHopperAbove();
 		}
 
